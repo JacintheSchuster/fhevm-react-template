@@ -7,9 +7,9 @@
 [![FHEVM](https://img.shields.io/badge/FHEVM-Zama-purple.svg)](https://docs.zama.ai/fhevm)
 [![Framework Agnostic](https://img.shields.io/badge/Framework-Agnostic-green.svg)](#)
 
-🌐 **[Live Demo (Next.js)](https://fhevm-sdk-demo.vercel.app/)** | 📦 **[NPM Package](https://npmjs.com/package/@zama/fhevm-sdk)** | 📖 **[Documentation](./docs/README.md)** | 🎥 **[Video Demo](./demo.mp4)**
+🌐 **[GitHub Repository](https://github.com/JacintheSchuster/fhevm-react-template)** | 📦 **[Live Demo](https://logistics-route-optimizer-fhe.vercel.app/)** | 📖 **[Documentation](./docs)** | 🎥 **demo.mp4 (Download to Watch)**
 
-**Built for the Zama FHEVM SDK Challenge** - A universal, framework-agnostic SDK that makes building confidential applications as simple as using wagmi for web3.
+**Built for the Zama FHEVM Bounty Program** - A universal, framework-agnostic SDK that makes building confidential applications as simple as using wagmi for web3.
 
 ---
 
@@ -387,32 +387,32 @@ const {
 
 ### Included Examples
 
-1. **Next.js Showcase** (`examples/nextjs`)
+1. **Logistics Route Optimizer** (`examples/logistics-optimizer`)
+   - Real-world production application
+   - Privacy-preserving route optimization using FHE
+   - Complete smart contract integration
+   - **[Live Demo](https://logistics-route-optimizer-fhe.vercel.app/)**
+   - **[Video Demo: demo.mp4 (Download Required)]**
+
+2. **Next.js Showcase** (`examples/nextjs`)
    - Full-featured demo with RainbowKit
    - Encryption/decryption UI
    - Contract interactions
-   - **[Live Demo](https://fhevm-sdk-demo.vercel.app/)**
 
-2. **React SPA** (`examples/react`)
+3. **React SPA** (`examples/react`)
    - Vite + React setup
    - Minimal boilerplate
    - Component library
 
-3. **Vue 3** (`examples/vue`)
+4. **Vue 3** (`examples/vue`)
    - Composition API examples
    - Vite setup
    - TypeScript support
 
-4. **Node.js Backend** (`examples/nodejs`)
+5. **Node.js Backend** (`examples/nodejs`)
    - Server-side encryption
    - API endpoint examples
    - Express integration
-
-5. **Logistics Route Optimizer** (`examples/logistics-optimizer`)
-   - Real-world use case imported from production
-   - Privacy-preserving route optimization
-   - Complete smart contract integration
-   - **Production deployment on Sepolia**
 
 ---
 
@@ -487,32 +487,37 @@ function RouteOptimizer() {
 ### Deployed Contract
 
 - **Network**: Sepolia Testnet
-- **Contract**: `0xE235A5C0DbF47ba76db3912c80267F9B43B8d1a8`
-- **Explorer**: [View on Etherscan](https://sepolia.etherscan.io/address/0xE235A5C0DbF47ba76db3912c80267F9B43B8d1a8)
-- **Frontend**: [Live Demo](https://logistics-route-optimizer.vercel.app/)
+- **Contract**: `0x1AACA0ce21752dE30E0EB927169084b84d290B87`
+- **Explorer**: [View on Etherscan](https://sepolia.etherscan.io/address/0x1AACA0ce21752dE30E0EB927169084b84d290B87)
+- **Frontend**: [Live Demo](https://logistics-route-optimizer-fhe.vercel.app/)
 
 ---
 
-## 🎥 Video Demo
+## 🎥 Video Demonstration
 
-[![Video Demo](./demo-thumbnail.png)](./demo.mp4)
+**📹 demo.mp4 - Complete Platform Walkthrough**
 
-**Watch the 5-minute demo covering:**
-1. ⚡ Quick setup (< 10 lines)
-2. 🔄 Framework-agnostic usage (React, Vue, Node.js)
-3. 🎨 Wagmi-like API demonstration
-4. 🚚 Real-world logistics optimizer walkthrough
+**Important**: The demonstration video `demo.mp4` must be downloaded to watch. Due to file size, video links are not available for streaming.
+
+**Video Content (5 minutes):**
+1. ⚡ Quick setup demonstration (< 10 lines of code)
+2. 🔄 Framework-agnostic usage (React, Vue, Node.js examples)
+3. 🎨 Wagmi-like API walkthrough
+4. 🚚 Real-world logistics optimizer demonstration at [https://logistics-route-optimizer-fhe.vercel.app/](https://logistics-route-optimizer-fhe.vercel.app/)
 5. 📦 Package structure and design decisions
+6. 🔐 Privacy-preserving route optimization in action
 
-**[▶️ Watch Demo Video (demo.mp4)](./demo.mp4)**
+**File**: `demo.mp4` (located in repository root)
+**Download**: Clone the repository or download from GitHub releases to view the video
 
 ---
 
-## 🏆 Competition Deliverables
+## 🏆 Zama FHEVM Bounty Program - Deliverables
 
 ### ✅ 1. Universal FHEVM SDK
 
 - **Package**: `packages/fhevm-sdk/`
+- **GitHub**: [https://github.com/JacintheSchuster/fhevm-react-template](https://github.com/JacintheSchuster/fhevm-react-template)
 - **Features**:
   - Framework-agnostic core
   - React/Next.js hooks
@@ -525,22 +530,23 @@ function RouteOptimizer() {
 
 | Framework | Status | Demo Link |
 |-----------|--------|-----------|
-| **Next.js** | ✅ Complete | [Live Demo](https://fhevm-sdk-demo.vercel.app/) |
-| **React** | ✅ Complete | [Vite Demo](#) |
-| **Vue 3** | ✅ Complete | [Composition API](#) |
-| **Node.js** | ✅ Complete | [Express API](#) |
-| **Logistics App** | ✅ Production | [Live App](https://logistics-route-optimizer.vercel.app/) |
+| **Logistics App** | ✅ Production | [https://logistics-route-optimizer-fhe.vercel.app/](https://logistics-route-optimizer-fhe.vercel.app/) |
+| **Next.js** | ✅ Complete | Framework showcase template |
+| **React** | ✅ Complete | Vite template |
+| **Vue 3** | ✅ Complete | Composition API template |
+| **Node.js** | ✅ Complete | Express API template |
 
-### ✅ 3. Video Demo
+### ✅ 3. Video Demonstration
 
-- **File**: `demo.mp4`
+- **File**: `demo.mp4` (Download required to watch)
 - **Duration**: 5 minutes
-- **Content**: Setup walkthrough + design decisions
+- **Content**: Complete platform walkthrough + design decisions
 - **Format**: MP4, 1080p
+- **Note**: Video must be downloaded from repository; streaming links unavailable
 
 ### ✅ 4. Documentation
 
-- Complete README with deployment links
+- Complete README with GitHub and deployment links
 - API reference documentation
 - Framework-specific guides
 - Migration guide from fhevmjs
@@ -596,7 +602,7 @@ function RouteOptimizer() {
 
 ```bash
 # Clone repository
-git clone https://github.com/YOUR_USERNAME/fhevm-react-template.git
+git clone https://github.com/JacintheSchuster/fhevm-react-template.git
 cd fhevm-react-template
 
 # Install dependencies
@@ -609,8 +615,8 @@ npm run build
 # Run tests
 npm test
 
-# Run Next.js example
-cd ../../examples/nextjs
+# Run logistics optimizer example
+cd ../../examples/logistics-optimizer
 npm run dev
 ```
 
@@ -641,14 +647,12 @@ fhevm-react-template/
 
 ---
 
-## 🚀 Deployment Links
+## 🚀 Important Links
 
-- **Next.js Demo**: [https://fhevm-sdk-demo.vercel.app/](https://fhevm-sdk-demo.vercel.app/)
-- **React Demo**: [https://fhevm-sdk-react.vercel.app/](#)
-- **Vue Demo**: [https://fhevm-sdk-vue.vercel.app/](#)
-- **Logistics Optimizer**: [https://logistics-route-optimizer.vercel.app/](https://logistics-route-optimizer.vercel.app/)
-- **NPM Package**: [https://npmjs.com/package/@zama/fhevm-sdk](#)
-- **Documentation Site**: [https://fhevm-sdk-docs.vercel.app/](#)
+- **GitHub Repository**: [https://github.com/JacintheSchuster/fhevm-react-template](https://github.com/JacintheSchuster/fhevm-react-template)
+- **Live Demo (Logistics Optimizer)**: [https://logistics-route-optimizer-fhe.vercel.app/](https://logistics-route-optimizer-fhe.vercel.app/)
+- **Video Demo**: `demo.mp4` (Download from repository required)
+- **Smart Contract**: [0x1AACA0ce21752dE30E0EB927169084b84d290B87](https://sepolia.etherscan.io/address/0x1AACA0ce21752dE30E0EB927169084b84d290B87) (Sepolia)
 
 ---
 
@@ -713,7 +717,7 @@ This project is open-source and free to use for any purpose.
 
 ## 🙏 Acknowledgments
 
-- **Zama Team** - For the incredible FHEVM technology and challenge
+- **Zama Team** - For the incredible FHEVM technology and bounty program
 - **wagmi Team** - For API design inspiration
 - **React Team** - For hooks pattern
 - **Vue Team** - For composition API
@@ -727,15 +731,19 @@ This project is open-source and free to use for any purpose.
 - **fhevmjs**: [github.com/zama-ai/fhevmjs](https://github.com/zama-ai/fhevmjs)
 - **Gateway SDK**: [github.com/zama-ai/gateway-sdk](https://github.com/zama-ai/gateway-sdk)
 - **Sepolia Testnet**: [sepolia.dev](https://sepolia.dev/)
-- **Challenge Details**: [Zama FHEVM Challenge](#)
+- **Bounty Program**: [Zama FHEVM Bounty Program](https://docs.zama.ai)
 
 ---
 
 <div align="center">
 
-**Built with ❤️ for the Zama FHEVM SDK Challenge**
+**Built with ❤️ for the Zama FHEVM Bounty Program**
 
 *Making confidential smart contracts accessible to every developer*
+
+**GitHub**: [https://github.com/JacintheSchuster/fhevm-react-template](https://github.com/JacintheSchuster/fhevm-react-template)
+
+**Live Demo**: [https://logistics-route-optimizer-fhe.vercel.app/](https://logistics-route-optimizer-fhe.vercel.app/)
 
 [⬆ Back to Top](#-universal-fhevm-sdk)
 
