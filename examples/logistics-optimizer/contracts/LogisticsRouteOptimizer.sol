@@ -1,55 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "@fhevm/solidity/lib/FHE.sol";
+import { FHE, euint32, euint8, ebool } from "@fhevm/solidity/lib/FHE.sol";
+import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
 
-/**
- * @title LogisticsRouteOptimizer
- * @notice Privacy-preserving logistics route optimization using Fully Homomorphic Encryption
- * @dev Implements FHE operations for confidential route calculations with Gateway integration
- */
-contract LogisticsRouteOptimizer {
+contract LogisticsRouteOptimizer is SepoliaConfig {
 
-    /// @notice Contract owner address
     address public owner;
-
-    /// @notice Counter for route IDs
     uint32 public routeCounter;
 
-    /// @notice Paused state
-    bool public paused;
-
-    /// @notice Mapping of pauser addresses
-    mapping(address => bool) public pausers;
-
-    // ==================== Custom Errors ====================
-
-    error NotAuthorized();
-    error NotYourRoute();
-    error CoordinateArraysMismatch();
-    error PriorityArrayMismatch();
-    error NoLocationsProvided();
-    error RouteAlreadyProcessed();
-    error InvalidRoute();
-    error InvalidLocationIndex();
-    error LocationAlreadyCompleted();
-    error RouteNotProcessed();
-    error ContractPaused();
-    error NotPauser();
-    error AlreadyPauser();
-    error InvalidAddress();
-
-    // ==================== Structs ====================
-
-    /// @notice Encrypted delivery location data
     struct DeliveryLocation {
-        euint32 encryptedX;     // X coordinate (encrypted)
-        euint32 encryptedY;     // Y coordinate (encrypted)
-        euint8 priority;        // Delivery priority (encrypted)
-        bool isActive;          // Whether location is still pending delivery
+        euint32 encryptedX; // X coordinate (encrypted)
+        euint32 encryptedY; // Y coordinate (encrypted)
+        euint8 priority;    // Delivery priority (encrypted)
+        bool isActive;
     }
 
-    /// @notice Route optimization request
     struct RouteRequest {
         address requester;
         uint32 locationCount;
@@ -58,231 +24,175 @@ contract LogisticsRouteOptimizer {
         bool processed;
         uint32 optimizedRouteId;
         uint256 timestamp;
-        uint256 requestBlock;   // Block number for Gateway callback
     }
 
-    /// @notice Optimized route result
     struct OptimizedRoute {
         uint32 routeId;
         address requester;
         euint32 totalDistance;
-        euint64 totalDistanceSquared;  // For more complex calculations
-        euint8 estimatedTime;          // Encrypted estimated delivery time
+        euint8 estimatedTime;  // Encrypted estimated delivery time
         bool isConfidential;
         uint256 createdAt;
-        uint8[] locationOrder;         // Public order indices
-        bool finalized;                // Gateway callback completion status
+        uint8[] locationOrder; // Public order indices
     }
-
-    // ==================== State Variables ====================
 
     mapping(uint32 => RouteRequest) public routeRequests;
     mapping(uint32 => mapping(uint8 => DeliveryLocation)) public routeLocations;
     mapping(uint32 => OptimizedRoute) public optimizedRoutes;
     mapping(address => uint32[]) public userRoutes;
 
-    // Gateway callback tracking
-    mapping(uint256 => uint32) private gatewayCallbackToRouteId;
-
-    // ==================== Events ====================
-
-    event RouteRequested(
-        uint32 indexed routeId,
-        address indexed requester,
-        uint32 locationCount,
-        uint256 timestamp
-    );
-
-    event RouteOptimized(
-        uint32 indexed routeId,
-        address indexed requester,
-        uint256 timestamp
-    );
-
-    event RouteFinalized(
-        uint32 indexed routeId,
-        uint32 decryptedDistance,
-        uint8 decryptedTime
-    );
-
-    event DeliveryCompleted(
-        uint32 indexed routeId,
-        uint8 locationIndex,
-        uint256 timestamp
-    );
-
-    event PauserAdded(address indexed pauser);
-    event PauserRemoved(address indexed pauser);
-    event ContractPausedToggled(bool paused);
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
-    // ==================== Modifiers ====================
+    event RouteRequested(uint32 indexed routeId, address indexed requester, uint32 locationCount);
+    event RouteOptimized(uint32 indexed routeId, address indexed requester, uint32 totalDistance);
+    event DeliveryCompleted(uint32 indexed routeId, uint8 locationIndex);
 
     modifier onlyOwner() {
-        if (msg.sender != owner) revert NotAuthorized();
+        require(msg.sender == owner, "Not authorized");
         _;
     }
 
     modifier onlyRequester(uint32 routeId) {
-        if (msg.sender != routeRequests[routeId].requester) revert NotYourRoute();
+        require(msg.sender == routeRequests[routeId].requester, "Not your route");
         _;
     }
-
-    modifier whenNotPaused() {
-        if (paused) revert ContractPaused();
-        _;
-    }
-
-    modifier onlyPauser() {
-        if (!pausers[msg.sender] && msg.sender != owner) revert NotPauser();
-        _;
-    }
-
-    // ==================== Constructor ====================
 
     constructor() {
         owner = msg.sender;
         routeCounter = 0;
-        paused = false;
-        pausers[msg.sender] = true;
-        emit PauserAdded(msg.sender);
     }
 
-    // ==================== Main Functions ====================
-
-    /**
-     * @notice Submit encrypted delivery locations for route optimization
-     * @param xCoord X coordinate (will be encrypted)
-     * @param yCoord Y coordinate (will be encrypted)
-     * @param priority Priority value (will be encrypted)
-     * @param maxDistance Maximum distance constraint (will be encrypted)
-     * @param vehicleCapacityValue Vehicle capacity (will be encrypted)
-     * @return routeId The ID of the created route request
-     */
+    // Submit encrypted delivery locations for route optimization
     function requestRouteOptimization(
-        uint32 xCoord,
-        uint32 yCoord,
-        uint8 priority,
+        uint32[] memory xCoords,
+        uint32[] memory yCoords,
+        uint8[] memory priorities,
         uint32 maxDistance,
-        uint8 vehicleCapacityValue
-    ) external whenNotPaused returns (uint32 routeId) {
-        // Input validation would go here
-        // For simplification, we create route with minimal data
+        uint8 vehicleCapacity
+    ) external returns (uint32 routeId) {
+        require(xCoords.length == yCoords.length, "Coordinate arrays must match");
+        require(xCoords.length == priorities.length, "Priority array must match");
+        require(xCoords.length > 0, "Must have at least one location");
 
         routeId = ++routeCounter;
-
-        // Encrypt inputs using FHE
-        euint32 encMaxDistance = FHE.asEuint32(maxDistance);
-        euint8 encVehicleCapacity = FHE.asEuint8(vehicleCapacityValue);
 
         // Store encrypted route request
         routeRequests[routeId] = RouteRequest({
             requester: msg.sender,
-            locationCount: 3, // Simplified
-            maxTravelDistance: encMaxDistance,
-            vehicleCapacity: encVehicleCapacity,
+            locationCount: uint32(xCoords.length),
+            maxTravelDistance: FHE.asEuint32(maxDistance),
+            vehicleCapacity: FHE.asEuint8(vehicleCapacity),
             processed: false,
             optimizedRouteId: 0,
-            timestamp: block.timestamp,
-            requestBlock: block.number
+            timestamp: block.timestamp
         });
+
+        // Store encrypted location data
+        for (uint8 i = 0; i < xCoords.length; i++) {
+            euint32 encX = FHE.asEuint32(xCoords[i]);
+            euint32 encY = FHE.asEuint32(yCoords[i]);
+            euint8 encPriority = FHE.asEuint8(priorities[i]);
+
+            routeLocations[routeId][i] = DeliveryLocation({
+                encryptedX: encX,
+                encryptedY: encY,
+                priority: encPriority,
+                isActive: true
+            });
+
+            // Grant access permissions
+            FHE.allowThis(encX);
+            FHE.allowThis(encY);
+            FHE.allowThis(encPriority);
+            FHE.allow(encX, msg.sender);
+            FHE.allow(encY, msg.sender);
+            FHE.allow(encPriority, msg.sender);
+        }
+
+        // Grant access to route constraints
+        FHE.allowThis(routeRequests[routeId].maxTravelDistance);
+        FHE.allowThis(routeRequests[routeId].vehicleCapacity);
+        FHE.allow(routeRequests[routeId].maxTravelDistance, msg.sender);
+        FHE.allow(routeRequests[routeId].vehicleCapacity, msg.sender);
 
         userRoutes[msg.sender].push(routeId);
 
-        emit RouteRequested(routeId, msg.sender, 3, block.timestamp);
+        emit RouteRequested(routeId, msg.sender, uint32(xCoords.length));
 
         return routeId;
     }
 
-    /**
-     * @notice Process route optimization using confidential computation
-     * @dev Only owner can trigger optimization processing
-     * @param routeId The ID of the route to optimize
-     */
-    function processRouteOptimization(uint32 routeId) external onlyOwner whenNotPaused {
-        if (routeRequests[routeId].processed) revert RouteAlreadyProcessed();
-        if (routeRequests[routeId].requester == address(0)) revert InvalidRoute();
+    // Process route optimization using confidential computation
+    function processRouteOptimization(uint32 routeId) external onlyOwner {
+        require(!routeRequests[routeId].processed, "Route already processed");
+        require(routeRequests[routeId].requester != address(0), "Invalid route");
 
         RouteRequest storage request = routeRequests[routeId];
 
         // Perform confidential route optimization calculation
         euint32 totalDistance = _calculateOptimalRoute(routeId);
-        euint64 totalDistanceSquared = FHE.mul(FHE.asEuint64(totalDistance), FHE.asEuint64(totalDistance));
-        // Simplified time estimation (just use a fixed value for demo)
-        euint8 estimatedTime = FHE.asEuint8(30); // 30 minutes estimate
+        euint8 estimatedTime = _calculateDeliveryTime(routeId, totalDistance);
 
         // Generate optimized route order (simplified for demo)
-        uint8[] memory routeOrder = new uint8[](request.locationCount);
-        for (uint8 i = 0; i < request.locationCount; i++) {
-            routeOrder[i] = i;
-        }
+        uint8[] memory routeOrder = _generateRouteOrder(request.locationCount);
 
         // Store optimized route
         optimizedRoutes[routeId] = OptimizedRoute({
             routeId: routeId,
             requester: request.requester,
             totalDistance: totalDistance,
-            totalDistanceSquared: totalDistanceSquared,
             estimatedTime: estimatedTime,
             isConfidential: true,
             createdAt: block.timestamp,
-            locationOrder: routeOrder,
-            finalized: false
+            locationOrder: routeOrder
         });
+
+        // Grant access to optimization results
+        FHE.allowThis(totalDistance);
+        FHE.allowThis(estimatedTime);
+        FHE.allow(totalDistance, request.requester);
+        FHE.allow(estimatedTime, request.requester);
 
         request.processed = true;
         request.optimizedRouteId = routeId;
 
-        emit RouteOptimized(routeId, request.requester, block.timestamp);
+        emit RouteOptimized(routeId, request.requester, 0); // Distance kept confidential in event
     }
 
-    /**
-     * @notice Finalize route (simplified without Gateway)
-     * @param routeId The ID of the route to finalize
-     */
-    function finalizeRoute(uint32 routeId) external onlyOwner whenNotPaused {
-        if (!routeRequests[routeId].processed) revert RouteNotProcessed();
+    // Get route optimization results (encrypted)
+    function getOptimizedRoute(uint32 routeId) external view onlyRequester(routeId) returns (
+        bytes32 totalDistanceEncrypted,
+        bytes32 estimatedTimeEncrypted,
+        uint8[] memory locationOrder,
+        uint256 createdAt
+    ) {
+        require(routeRequests[routeId].processed, "Route not processed yet");
 
         OptimizedRoute storage route = optimizedRoutes[routeId];
-        route.finalized = true;
 
-        emit RouteFinalized(routeId, 0, 0);
+        return (
+            FHE.toBytes32(route.totalDistance), // Return as bytes32 for client decryption
+            FHE.toBytes32(route.estimatedTime),
+            route.locationOrder,
+            route.createdAt
+        );
     }
 
-    /**
-     * @notice Mark delivery as completed for a specific location
-     * @param routeId The route ID
-     * @param locationIndex The index of the location to mark as completed
-     */
-    function markDeliveryCompleted(uint32 routeId, uint8 locationIndex)
-        external
-        onlyRequester(routeId)
-        whenNotPaused
-    {
-        if (!routeRequests[routeId].processed) revert RouteNotProcessed();
-        if (locationIndex >= routeRequests[routeId].locationCount) revert InvalidLocationIndex();
-        if (!routeLocations[routeId][locationIndex].isActive) revert LocationAlreadyCompleted();
+    // Mark delivery as completed for a specific location
+    function markDeliveryCompleted(uint32 routeId, uint8 locationIndex) external onlyRequester(routeId) {
+        require(routeRequests[routeId].processed, "Route not processed");
+        require(locationIndex < routeRequests[routeId].locationCount, "Invalid location index");
+        require(routeLocations[routeId][locationIndex].isActive, "Location already completed");
 
         routeLocations[routeId][locationIndex].isActive = false;
 
-        emit DeliveryCompleted(routeId, locationIndex, block.timestamp);
+        emit DeliveryCompleted(routeId, locationIndex);
     }
 
-    // ==================== View Functions ====================
-
-    /**
-     * @notice Get user's route history
-     * @param user The user address to query
-     * @return Array of route IDs for the user
-     */
+    // Get user's route history
     function getUserRoutes(address user) external view returns (uint32[] memory) {
         return userRoutes[user];
     }
 
-    /**
-     * @notice Get route request details (public info only)
-     * @param routeId The route ID to query
-     */
+    // Get route request details (public info only)
     function getRouteRequest(uint32 routeId) external view returns (
         address requester,
         uint32 locationCount,
@@ -298,62 +208,70 @@ contract LogisticsRouteOptimizer {
         );
     }
 
-    // ==================== Admin Functions ====================
+    // Internal function to calculate optimal route using FHE operations
+    function _calculateOptimalRoute(uint32 routeId) private returns (euint32) {
+        RouteRequest storage request = routeRequests[routeId];
+        euint32 totalDistance = FHE.asEuint32(0);
 
-    /**
-     * @notice Add a new pauser
-     * @param _pauser Address to grant pauser role
-     */
-    function addPauser(address _pauser) external onlyOwner {
-        if (_pauser == address(0)) revert InvalidAddress();
-        if (pausers[_pauser]) revert AlreadyPauser();
+        // Simplified distance calculation using FHE operations
+        // In practice, this would implement a more sophisticated optimization algorithm
+        for (uint8 i = 0; i < request.locationCount - 1; i++) {
+            // Calculate distance between consecutive locations
+            euint32 distance = _calculateDistance(routeId, i, i + 1);
+            totalDistance = FHE.add(totalDistance, distance);
+        }
 
-        pausers[_pauser] = true;
-        emit PauserAdded(_pauser);
+        return totalDistance;
     }
 
-    /**
-     * @notice Remove a pauser
-     * @param _pauser Address to revoke pauser role
-     */
-    function removePauser(address _pauser) external onlyOwner {
-        if (!pausers[_pauser]) revert NotPauser();
+    // Calculate encrypted distance between two locations
+    function _calculateDistance(uint32 routeId, uint8 from, uint8 to) private returns (euint32) {
+        DeliveryLocation storage loc1 = routeLocations[routeId][from];
+        DeliveryLocation storage loc2 = routeLocations[routeId][to];
 
-        pausers[_pauser] = false;
-        emit PauserRemoved(_pauser);
+        // Simplified Manhattan distance calculation using FHE
+        euint32 deltaX = FHE.sub(loc2.encryptedX, loc1.encryptedX);
+        euint32 deltaY = FHE.sub(loc2.encryptedY, loc1.encryptedY);
+
+        // Approximate distance (Manhattan distance for simplicity)
+        return FHE.add(deltaX, deltaY);
     }
 
-    /**
-     * @notice Toggle contract pause state
-     */
-    function togglePause() external onlyPauser {
-        paused = !paused;
-        emit ContractPausedToggled(paused);
-    }
-
-    /**
-     * @notice Transfer ownership
-     * @param newOwner New owner address
-     */
-    function transferOwnership(address newOwner) external onlyOwner {
-        if (newOwner == address(0)) revert InvalidAddress();
-
-        address previousOwner = owner;
-        owner = newOwner;
-
-        emit OwnershipTransferred(previousOwner, newOwner);
-    }
-
-    // ==================== Internal Functions ====================
-
-    /**
-     * @notice Calculate optimal route using FHE operations
-     * @dev Simplified distance calculation
-     */
-    function _calculateOptimalRoute(uint32 routeId) private view returns (euint32) {
+    // Calculate estimated delivery time based on distance and vehicle capacity
+    function _calculateDeliveryTime(uint32 routeId, euint32 totalDistance) private returns (euint8) {
         RouteRequest storage request = routeRequests[routeId];
 
-        // Return simplified distance
-        return request.maxTravelDistance;
+        // Simplified time calculation using available FHE operations
+        euint32 loadingTime = FHE.mul(FHE.asEuint32(request.locationCount), FHE.asEuint32(5)); // 5 min per stop
+
+        // Convert to euint8 with range constraint
+        return FHE.asEuint8(100); // Simplified placeholder for demo
+    }
+
+    // Generate route order (simplified - in practice would use optimization algorithm)
+    function _generateRouteOrder(uint32 locationCount) private pure returns (uint8[] memory) {
+        uint8[] memory order = new uint8[](locationCount);
+        for (uint8 i = 0; i < locationCount; i++) {
+            order[i] = i;
+        }
+        return order;
+    }
+
+    // Get encrypted route data for owner (read-only access)
+    function getRouteDataForOwner(uint32 routeId) external view onlyOwner returns (
+        bytes32 encryptedTotalDistance,
+        bytes32 encryptedEstimatedTime,
+        address requester,
+        uint256 createdAt
+    ) {
+        require(routeRequests[routeId].processed, "Route not processed");
+
+        OptimizedRoute storage route = optimizedRoutes[routeId];
+        return (
+            FHE.toBytes32(route.totalDistance),
+            FHE.toBytes32(route.estimatedTime),
+            route.requester,
+            route.createdAt
+        );
     }
 }
