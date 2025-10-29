@@ -1,0 +1,22 @@
+{
+  "name": "logistics-route-optimizer",
+  "version": "1.0.0",
+  "description": "Logistics Route Optimizer DApp with FHEVM confidential computation",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server . -p 3000 -c-1 --cors",
+    "start": "npx http-server . -p 8080 -c-1 --cors"
+  },
+  "keywords": [
+    "logistics",
+    "route-optimization",
+    "fhevm",
+    "blockchain",
+    "ethereum",
+    "dapp"
+  ],
+  "author": "Logistics Route Optimizer",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
